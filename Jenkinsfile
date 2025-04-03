@@ -1,8 +1,8 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-alpine'
-        }
+    agent any
+    
+    tools {
+        nodejs 'node18'
     }
     
     stages {
@@ -12,14 +12,9 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm ci'
-            }
-        }
-        
         stage('Build') {
             steps {
+                sh 'npm ci'
                 sh 'npm run build'
             }
         }
@@ -32,12 +27,6 @@ pipeline {
     }
     
     post {
-        success {
-            echo 'Build and tests completed successfully!'
-        }
-        failure {
-            echo 'Build or tests failed!'
-        }
         always {
             cleanWs()
         }
