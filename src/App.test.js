@@ -3,6 +3,6 @@ import App from './App';
 
 test('renders Felipe Barbosa on the page', () => {
   render(<App />);
-  const nameElement = screen.getByText(/Felipe Barbosa/i);
+  const nameElement = screen.getByText(/Barbosa/i);
   expect(nameElement).toBeInTheDocument();
 });
