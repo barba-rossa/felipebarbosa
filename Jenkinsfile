@@ -10,6 +10,7 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_REGION = credentials('AWS_REGION')
         S3_BUCKET_NAME = credentials('S3_BUCKET_NAME')
+        AWS_CLI_INSTALL_DIR = '/var/jenkins_home/aws-cli'
     }
     
     stages {
@@ -32,18 +33,32 @@ pipeline {
             }
         }
         
-        stage('Install AWS CLI') {
+        stage('Install/Update AWS CLI') {
             steps {
                 script {
-                    // Install AWS CLI in a user directory to avoid permission issues
-                    sh '''
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-                        unzip awscliv2.zip
-                        ./aws/install -i ~/aws-cli -b ~/aws-cli/bin
-                        rm -rf awscliv2.zip aws
-                    '''
+                    // Check if AWS CLI exists and install/update accordingly
+                    def awsCliInstalled = sh(script: 'command -v aws || true', returnStdout: true).trim()
+                    
+                    if (!awsCliInstalled) {
+                        echo "Installing AWS CLI..."
+                        sh '''
+                            curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+                            unzip awscliv2.zip
+                            ./aws/install -i ${AWS_CLI_INSTALL_DIR} -b ${AWS_CLI_INSTALL_DIR}/bin
+                            rm -rf awscliv2.zip aws
+                        '''
+                    } else {
+                        echo "Updating AWS CLI..."
+                        sh '''
+                            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                            unzip awscliv2.zip
+                            ./aws/install -i ${AWS_CLI_INSTALL_DIR} -b ${AWS_CLI_INSTALL_DIR}/bin --update
+                            rm -rf awscliv2.zip aws
+                        '''
+                    }
+                    
                     // Add AWS CLI to PATH
-                    env.PATH = "${env.HOME}/aws-cli/bin:${env.PATH}"
+                    env.PATH = "${AWS_CLI_INSTALL_DIR}/bin:${env.PATH}"
                 }
             }
         }
@@ -51,6 +66,7 @@ pipeline {
         stage('Deploy to S3') {
             steps {
                 sh '''
+                    aws --version
                     aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
                     aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
                     aws configure set default.region $AWS_REGION
