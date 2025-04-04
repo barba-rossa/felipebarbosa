@@ -37,7 +37,7 @@ pipeline {
                 script {
                     // Install AWS CLI in a user directory to avoid permission issues
                     sh '''
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
                         unzip awscliv2.zip
                         ./aws/install -i ~/aws-cli -b ~/aws-cli/bin
                         rm -rf awscliv2.zip aws
