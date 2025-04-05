@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [name] = useState('Felipe Barbosa');
+  const [name] = useState('Barbosa');
   
   return (
     <div className="App">
